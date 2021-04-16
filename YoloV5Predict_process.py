@@ -19,14 +19,11 @@
 from ikomia import core, dataprocess
 import copy
 # Your imports below
-import os
 import sys
 import logging
 import torch
 import random
 import numpy as np
-# Add yolov5 git submodule to path
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/yolov5")
 from yolov5.models.experimental import attempt_load
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
 from yolov5.utils.datasets import letterbox
@@ -163,7 +160,7 @@ class YoloV5PredictProcess(dataprocess.CImageProcess2d):
             stride = int(self.model.stride.max())  # model stride
             param.input_size = check_img_size(param.input_size, s=stride)  # check img_size
             if half:
-                self.model.half()  # to FP16
+                self.model.half()  # to FP16F
 
             # Get names and colors
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
