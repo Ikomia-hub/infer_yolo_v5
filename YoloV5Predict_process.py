@@ -243,17 +243,18 @@ class YoloV5PredictProcessFactory(dataprocess.CProcessFactory):
         self.info.shortDescription = "Ultralytics YoloV5 object detection models."
         self.info.description = "This plugin proposes inference on YoloV5 object detection models. " \
                                 "Models implementation comes from the Ultralytics team based on " \
-                                "PyTorch framework."
-        self.info.authors = "Plugin authors"
+                                "PyTorch framework. You can either run inference on COCO pre-trained models or " \
+                                "use custom models trained with the YoloV5Train plugin from the Ikomia marketplace."
+        self.info.authors = "Ultralytics"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
         self.info.version = "1.0.0"
         self.info.iconPath = "icons/icon.png"
-        self.info.authors = "Ultralytics"
         self.info.year = 2020
         self.info.license = "GPLv3"
+        self.info.documentationLink = "https://github.com/ultralytics/yolov5"
         # Code source repository
-        self.info.repository = "https://github.com/ultralytics/yolov5"
+        self.info.repository = "https://github.com/Ikomia-dev/YoloV5Predict"
         # Keywords used for search
         self.info.keywords = "object,detection,pytorch"
 
