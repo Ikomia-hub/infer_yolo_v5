@@ -20,6 +20,7 @@ from ikomia import core, dataprocess
 import copy
 # Your imports below
 import sys
+import os
 import logging
 import torch
 import random
@@ -59,7 +60,7 @@ class YoloV5PredictParam(core.CProtocolTaskParam):
         core.CProtocolTaskParam.__init__(self)
         # Place default value initialization here
         self.model_name = "yolov5s"
-        self.model_path = "yolov5s.pt"
+        self.model_path = os.path.dirname(os.path.realpath(__file__)) + os.sep + "yolov5s.pt"
         self.dataset = "COCO"
         self.input_size = 640
         self.augment = False
