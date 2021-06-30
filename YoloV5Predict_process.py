@@ -53,10 +53,10 @@ def init_logging(rank=-1):
 # - Class to handle the process parameters
 # - Inherits PyCore.CProtocolTaskParam from Ikomia API
 # --------------------
-class YoloV5PredictParam(core.CProtocolTaskParam):
+class YoloV5PredictParam(core.CWorkflowTaskParam):
 
     def __init__(self):
-        core.CProtocolTaskParam.__init__(self)
+        core.CWorkflowTaskParam.__init__(self)
         # Place default value initialization here
         self.model_name = "yolov5s"
         self.model_path = "yolov5s.pt"
@@ -99,10 +99,10 @@ class YoloV5PredictParam(core.CProtocolTaskParam):
 # - Class which implements the process
 # - Inherits PyCore.CProtocolTask or derived from Ikomia API
 # --------------------
-class YoloV5PredictProcess(dataprocess.CImageProcess2d):
+class YoloV5PredictProcess(dataprocess.C2dImageTask):
 
     def __init__(self, name, param):
-        dataprocess.CImageProcess2d.__init__(self, name)
+        dataprocess.C2dImageTask.__init__(self, name)
         self.model = None
         self.names = None
         self.colors = None
@@ -234,10 +234,10 @@ class YoloV5PredictProcess(dataprocess.CImageProcess2d):
 # - Factory class to build process object
 # - Inherits PyDataProcess.CProcessFactory from Ikomia API
 # --------------------
-class YoloV5PredictProcessFactory(dataprocess.CProcessFactory):
+class YoloV5PredictProcessFactory(dataprocess.CTaskFactory):
 
     def __init__(self):
-        dataprocess.CProcessFactory.__init__(self)
+        dataprocess.CTaskFactory.__init__(self)
         # Set process information as string here
         self.info.name = "YoloV5Predict"
         self.info.shortDescription = "Ultralytics YoloV5 object detection models."

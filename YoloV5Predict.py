@@ -17,8 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ikomia import dataprocess
-import YoloV5Predict_process as processMod
-import YoloV5Predict_widget as widgetMod
 
 
 # --------------------
@@ -32,8 +30,10 @@ class YoloV5Predict(dataprocess.CPluginProcessInterface):
 
     def getProcessFactory(self):
         # Instantiate process object
-        return processMod.YoloV5PredictProcessFactory()
+        from YoloV5Predict.YoloV5Predict_process import YoloV5PredictProcessFactory
+        return YoloV5PredictProcessFactory()
 
     def getWidgetFactory(self):
         # Instantiate associated widget object
-        return widgetMod.YoloV5PredictWidgetFactory()
+        from YoloV5Predict.YoloV5Predict_widget import YoloV5PredictWidgetFactory
+        return YoloV5PredictWidgetFactory()
