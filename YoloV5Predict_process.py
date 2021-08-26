@@ -18,17 +18,18 @@
 
 from ikomia import core, dataprocess
 import copy
-# Your imports below
 import sys
 import logging
 import torch
 import random
 import numpy as np
+from distutils.util import strtobool
 from yolov5.models.experimental import attempt_load
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
 from yolov5.utils.datasets import letterbox
 
 logger = logging.getLogger()
+
 
 def init_logging(rank=-1):
     if rank in [-1, 0]:
@@ -74,10 +75,10 @@ class YoloV5PredictParam(core.CWorkflowTaskParam):
         self.model_path = param_map["model_path"]
         self.dataset = param_map["dataset"]
         self.input_size = int(param_map["input_size"])
-        self.augment = bool(param_map["augment"])
+        self.augment = strtobool(param_map["augment"])
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thres"])
-        self.agnostic_nms = bool(param_map["agnostic_nms"])
+        self.agnostic_nms = strtobool(param_map["agnostic_nms"])
         pass
 
     def getParamMap(self):
@@ -112,7 +113,7 @@ class YoloV5PredictProcess(dataprocess.C2dImageTask):
         # Add graphics output
         self.addOutput(dataprocess.CGraphicsOutput())
         # Add numeric output
-        self.addOutput(dataprocess.CDblFeatureIO())
+        self.addOutput(dataprocess.CNumericIO())
 
         # Create parameters class
         if param is None:
