@@ -213,7 +213,8 @@ class YoloV5PredictProcess(dataprocess.C2dImageTask):
                     h = float(xyxy[3] - xyxy[1])
                     prop_rect = core.GraphicsRectProperty()
                     prop_rect.pen_color = self.colors[int(cls)]
-                    graphics_output.addRectangle(float(xyxy[0]), float(xyxy[1]), w, h, prop_rect)
+                    graphics_box = graphics_output.addRectangle(float(xyxy[0]), float(xyxy[1]), w, h, prop_rect)
+                    graphics_box.setCategory(self.names[int(cls)])
                     # Label
                     name = self.names[int(cls)]
                     prop_text = core.GraphicsTextProperty()
