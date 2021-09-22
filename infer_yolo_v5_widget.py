@@ -18,7 +18,7 @@
 
 from ikomia import core, dataprocess
 from ikomia.utils import qtconversion, pyqtutils
-from YoloV5Predict.YoloV5Predict_process import YoloV5PredictParam
+from infer_yolo_v5.infer_yolo_v5_process import InferYoloV5Param
 # PyQt GUI framework
 from PyQt5.QtWidgets import *
 
@@ -27,13 +27,13 @@ from PyQt5.QtWidgets import *
 # - Class which implements widget associated with the process
 # - Inherits PyCore.CProtocolTaskWidget from Ikomia API
 # --------------------
-class YoloV5PredictWidget(core.CWorkflowTaskWidget):
+class InferYoloV5Widget(core.CWorkflowTaskWidget):
 
     def __init__(self, param, parent):
         core.CWorkflowTaskWidget.__init__(self, parent)
 
         if param is None:
-            self.parameters = YoloV5PredictParam()
+            self.parameters = InferYoloV5Param()
         else:
             self.parameters = param
 
@@ -104,13 +104,13 @@ class YoloV5PredictWidget(core.CWorkflowTaskWidget):
 # - Factory class to build process widget object
 # - Inherits PyDataProcess.CWidgetFactory from Ikomia API
 # --------------------
-class YoloV5PredictWidgetFactory(dataprocess.CWidgetFactory):
+class InferYoloV5WidgetFactory(dataprocess.CWidgetFactory):
 
     def __init__(self):
         dataprocess.CWidgetFactory.__init__(self)
         # Set the name of the process -> it must be the same as the one declared in the process factory class
-        self.name = "YoloV5Predict"
+        self.name = "infer_yolo_v5"
 
     def create(self, param):
         # Create widget object
-        return YoloV5PredictWidget(param, None)
+        return InferYoloV5Widget(param, None)

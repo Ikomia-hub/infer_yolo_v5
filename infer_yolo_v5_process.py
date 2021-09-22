@@ -54,7 +54,7 @@ def init_logging(rank=-1):
 # - Class to handle the process parameters
 # - Inherits PyCore.CProtocolTaskParam from Ikomia API
 # --------------------
-class YoloV5PredictParam(core.CWorkflowTaskParam):
+class InferYoloV5Param(core.CWorkflowTaskParam):
 
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
@@ -100,7 +100,7 @@ class YoloV5PredictParam(core.CWorkflowTaskParam):
 # - Class which implements the process
 # - Inherits PyCore.CProtocolTask or derived from Ikomia API
 # --------------------
-class YoloV5PredictProcess(dataprocess.C2dImageTask):
+class InferYoloV5(dataprocess.C2dImageTask):
 
     def __init__(self, name, param):
         dataprocess.C2dImageTask.__init__(self, name)
@@ -117,7 +117,7 @@ class YoloV5PredictProcess(dataprocess.C2dImageTask):
 
         # Create parameters class
         if param is None:
-            self.setParam(YoloV5PredictParam())
+            self.setParam(InferYoloV5Param())
         else:
             self.setParam(copy.deepcopy(param))
 
@@ -236,12 +236,12 @@ class YoloV5PredictProcess(dataprocess.C2dImageTask):
 # - Factory class to build process object
 # - Inherits PyDataProcess.CProcessFactory from Ikomia API
 # --------------------
-class YoloV5PredictProcessFactory(dataprocess.CTaskFactory):
+class InferYoloV5Factory(dataprocess.CTaskFactory):
 
     def __init__(self):
         dataprocess.CTaskFactory.__init__(self)
         # Set process information as string here
-        self.info.name = "YoloV5Predict"
+        self.info.name = "infer_yolo_v5"
         self.info.shortDescription = "Ultralytics YoloV5 object detection models."
         self.info.description = "This plugin proposes inference on YoloV5 object detection models. " \
                                 "Models implementation comes from the Ultralytics team based on " \
@@ -261,4 +261,4 @@ class YoloV5PredictProcessFactory(dataprocess.CTaskFactory):
 
     def create(self, param=None):
         # Create process object
-        return YoloV5PredictProcess(self.info.name, param)
+        return InferYoloV5(self.info.name, param)
