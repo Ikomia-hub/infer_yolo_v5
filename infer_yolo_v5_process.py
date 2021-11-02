@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ikomia import core, dataprocess
+import os
 import copy
 import sys
 import logging
@@ -58,9 +59,14 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
 
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
+
+        # Create models folder
+        models_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
+        os.makedirs(models_folder, exist_ok=True)
+
         # Place default value initialization here
         self.model_name = "yolov5s"
-        self.model_path = "yolov5s.pt"
+        self.model_path = models_folder + os.sep + self.model_name + ".pt"
         self.dataset = "COCO"
         self.input_size = 640
         self.augment = False

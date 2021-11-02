@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 from ikomia import core, dataprocess
 from ikomia.utils import qtconversion, pyqtutils
 from infer_yolo_v5.infer_yolo_v5_process import InferYoloV5Param
@@ -41,6 +42,7 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
         self.grid_layout = QGridLayout()
 
         self.combo_model = pyqtutils.append_combo(self.grid_layout, "Model")
+        self.combo_model.addItem("yolov5n")
         self.combo_model.addItem("yolov5s")
         self.combo_model.addItem("yolov5m")
         self.combo_model.addItem("yolov5l")
@@ -91,7 +93,13 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
         self.parameters.update = True
         self.parameters.model_name = self.combo_model.currentText()
         self.parameters.dataset = self.combo_dataset.currentText()
-        self.parameters.model_path = self.browse_model.path
+
+        if self.combo_dataset.currentText() == "COCO":
+            models_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
+            self.parameters.model_path = models_folder + os.sep + self.parameters.model_name + ".pt"
+        else:
+            self.parameters.model_path = self.browse_model.path
+
         self.parameters.input_size = self.spin_size.value()
         self.parameters.conf_thres = self.spin_confidence.value()
         self.parameters.iou_thres = self.spin_iou.value()
