@@ -119,7 +119,7 @@ class InferYoloV5(dataprocess.C2dImageTask):
         # Add graphics output
         self.addOutput(dataprocess.CGraphicsOutput())
         # Add numeric output
-        self.addOutput(dataprocess.CNumericIO())
+        self.addOutput(dataprocess.CBlobMeasureIO())
 
         # Create parameters class
         if param is None:
@@ -202,9 +202,9 @@ class InferYoloV5(dataprocess.C2dImageTask):
         graphics_output = self.getOutput(1)
         graphics_output.setNewLayer("YoloV5")
         graphics_output.setImageIndex(0)
-
-        detected_names = []
-        detected_conf = []
+        # Init numeric output
+        numeric_output = self.getOutput(2)
+        numeric_output.clearData()
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
@@ -226,15 +226,24 @@ class InferYoloV5(dataprocess.C2dImageTask):
                     prop_text = core.GraphicsTextProperty()
                     prop_text.font_size = 8
                     prop_text.color = self.colors[int(cls)]
+                    prop_text.bold = True
                     graphics_output.addText(name, float(xyxy[0]), float(xyxy[1]), prop_text)
-                    detected_names.append(name)
-                    detected_conf.append(conf.item())
+                    # object results
+                    results = []
+                    confidence_data = dataprocess.CObjectMeasure(
+                        dataprocess.CMeasure(core.MeasureId.CUSTOM, "Confidence"),
+                        conf.item(),
+                        graphics_box.getId(),
+                        name)
+                    box_data = dataprocess.CObjectMeasure(
+                        dataprocess.CMeasure(core.MeasureId.BBOX),
+                        [float(xyxy[0]), float(xyxy[1]), w, h],
+                        graphics_box.getId(),
+                        name)
+                    results.append(confidence_data)
+                    results.append(box_data)
+                    numeric_output.addObjectMeasures(results)
 
-        # Init numeric output
-        numeric_ouput = self.getOutput(2)
-        numeric_ouput.clearData()
-        numeric_ouput.setOutputType(dataprocess.NumericOutputType.TABLE)
-        numeric_ouput.addValueList(detected_conf, "Confidence", detected_names)
         self.emitStepProgress()
 
 
@@ -255,7 +264,7 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         self.info.authors = "Plugin authors"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.0.0"
+        self.info.version = "1.1.0"
         self.info.iconPath = "icons/icon.png"
         self.info.authors = "Ultralytics"
         self.info.year = 2020
