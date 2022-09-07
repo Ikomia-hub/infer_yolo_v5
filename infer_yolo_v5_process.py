@@ -116,10 +116,8 @@ class InferYoloV5(dataprocess.C2dImageTask):
         self.update = False
         # Detect if we have a GPU available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # Add graphics output
-        self.addOutput(dataprocess.CGraphicsOutput())
-        # Add numeric output
-        self.addOutput(dataprocess.CBlobMeasureIO())
+        # Add object detection output
+        self.addOutput(dataprocess.CObjectDetectionIO())
 
         # Create parameters class
         if param is None:
@@ -199,12 +197,9 @@ class InferYoloV5(dataprocess.C2dImageTask):
         pred = non_max_suppression(pred, param.conf_thres, param.iou_thres, agnostic=param.agnostic_nms)
         self.emitStepProgress()
 
-        graphics_output = self.getOutput(1)
-        graphics_output.setNewLayer("YoloV5")
-        graphics_output.setImageIndex(0)
-        # Init numeric output
-        numeric_output = self.getOutput(2)
-        numeric_output.clearData()
+        # Init object detection output
+        obj_detect_out = self.getOutput(1)
+        obj_detect_out.init("YoloV5", 0)
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
@@ -217,32 +212,9 @@ class InferYoloV5(dataprocess.C2dImageTask):
                     # Box
                     w = float(xyxy[2] - xyxy[0])
                     h = float(xyxy[3] - xyxy[1])
-                    prop_rect = core.GraphicsRectProperty()
-                    prop_rect.pen_color = self.colors[int(cls)]
-                    graphics_box = graphics_output.addRectangle(float(xyxy[0]), float(xyxy[1]), w, h, prop_rect)
-                    graphics_box.setCategory(self.names[int(cls)])
-                    # Label
-                    name = self.names[int(cls)]
-                    prop_text = core.GraphicsTextProperty()
-                    prop_text.font_size = 8
-                    prop_text.color = self.colors[int(cls)]
-                    prop_text.bold = True
-                    graphics_output.addText(name, float(xyxy[0]), float(xyxy[1]), prop_text)
-                    # object results
-                    results = []
-                    confidence_data = dataprocess.CObjectMeasure(
-                        dataprocess.CMeasure(core.MeasureId.CUSTOM, "Confidence"),
-                        conf.item(),
-                        graphics_box.getId(),
-                        name)
-                    box_data = dataprocess.CObjectMeasure(
-                        dataprocess.CMeasure(core.MeasureId.BBOX),
-                        [float(xyxy[0]), float(xyxy[1]), w, h],
-                        graphics_box.getId(),
-                        name)
-                    results.append(confidence_data)
-                    results.append(box_data)
-                    numeric_output.addObjectMeasures(results)
+                    label = self.names[int(cls)]
+                    color = self.colors[int(cls)]
+                    obj_detect_out.addObject(label, conf.item(), float(xyxy[0]), float(xyxy[1]), w, h, color)
 
         self.emitStepProgress()
 
@@ -264,7 +236,7 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         self.info.authors = "Plugin authors"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.1.0"
+        self.info.version = "1.2.0"
         self.info.iconPath = "icons/icon.png"
         self.info.authors = "Ultralytics"
         self.info.year = 2020
