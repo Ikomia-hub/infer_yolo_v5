@@ -208,13 +208,15 @@ class InferYoloV5(dataprocess.C2dImageTask):
                 det[:, :4] = scale_coords(image.shape[2:], det[:, :4], src_image.shape).round()
 
                 # Results
+                index = 0
                 for *xyxy, conf, cls in reversed(det):
                     # Box
                     w = float(xyxy[2] - xyxy[0])
                     h = float(xyxy[3] - xyxy[1])
                     label = self.names[int(cls)]
                     color = self.colors[int(cls)]
-                    obj_detect_out.addObject(label, conf.item(), float(xyxy[0]), float(xyxy[1]), w, h, color)
+                    obj_detect_out.addObject(index, label, conf.item(), float(xyxy[0]), float(xyxy[1]), w, h, color)
+                    index += 1
 
         self.emitStepProgress()
 
