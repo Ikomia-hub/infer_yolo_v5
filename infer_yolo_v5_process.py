@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ikomia import core, dataprocess
+from ikomia import utils, core, dataprocess
 import os
 import copy
 import sys
@@ -24,7 +24,6 @@ import logging
 import torch
 import random
 import numpy as np
-from distutils.util import strtobool
 from yolov5.models.experimental import attempt_load
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
 from yolov5.utils.datasets import letterbox
@@ -81,10 +80,10 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
         self.model_path = param_map["model_path"]
         self.dataset = param_map["dataset"]
         self.input_size = int(param_map["input_size"])
-        self.augment = strtobool(param_map["augment"])
+        self.augment = utils.strtobool(param_map["augment"])
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thres"])
-        self.agnostic_nms = strtobool(param_map["agnostic_nms"])
+        self.agnostic_nms = utils.strtobool(param_map["agnostic_nms"])
         pass
 
     def getParamMap(self):
