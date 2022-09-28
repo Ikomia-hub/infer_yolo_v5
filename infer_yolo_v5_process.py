@@ -77,14 +77,15 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
         self.model_name = param_map["model_name"]
-        self.model_path = param_map["model_path"]
         self.dataset = param_map["dataset"]
         self.input_size = int(param_map["input_size"])
         self.augment = utils.strtobool(param_map["augment"])
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thres"])
         self.agnostic_nms = utils.strtobool(param_map["agnostic_nms"])
-        pass
+
+        if self.dataset != "COCO":
+            self.model_path = param_map["model_path"]
 
     def getParamMap(self):
         # Send parameters values to Ikomia application
@@ -237,7 +238,7 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         self.info.authors = "Plugin authors"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.2.0"
+        self.info.version = "1.2.1"
         self.info.iconPath = "icons/icon.png"
         self.info.authors = "Ultralytics"
         self.info.year = 2020
