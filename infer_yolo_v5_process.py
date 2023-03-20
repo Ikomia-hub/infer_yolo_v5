@@ -73,94 +73,89 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
         self.iou_thres = 0.45
         self.agnostic_nms = False
 
-    def setParamMap(self, param_map):
+    def set_values(self, params):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
-        self.model_name = param_map["model_name"]
-        self.dataset = param_map["dataset"]
-        self.input_size = int(param_map["input_size"])
-        self.augment = utils.strtobool(param_map["augment"])
-        self.conf_thres = float(param_map["conf_thres"])
-        self.iou_thres = float(param_map["iou_thres"])
-        self.agnostic_nms = utils.strtobool(param_map["agnostic_nms"])
+        self.model_name = params["model_name"]
+        self.dataset = params["dataset"]
+        self.input_size = int(params["input_size"])
+        self.augment = utils.strtobool(params["augment"])
+        self.conf_thres = float(params["conf_thres"])
+        self.iou_thres = float(params["iou_thres"])
+        self.agnostic_nms = utils.strtobool(params["agnostic_nms"])
 
         if self.dataset != "COCO":
-            self.model_path = param_map["model_path"]
+            self.model_path = params["model_path"]
 
-    def getParamMap(self):
+    def get_values(self):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
-        param_map = core.ParamMap()
-        param_map["model_name"] = self.model_name
-        param_map["model_path"] = self.model_path
-        param_map["dataset"] = self.dataset
-        param_map["input_size"] = str(self.input_size)
-        param_map["augment"] = str(self.augment)
-        param_map["conf_thres"] = str(self.conf_thres)
-        param_map["iou_thres"] = str(self.iou_thres)
-        param_map["agnostic_nms"] = str(self.agnostic_nms)
-        return param_map
-
+        params = {
+            "model_name": self.model_name,
+            "model_path": self.model_path,
+            "dataset": self.dataset,
+            "input_size": str(self.input_size),
+            "augment": str(self.augment),
+            "conf_thres": str(self.conf_thres),
+            "iou_thres": str(self.iou_thres),
+            "agnostic_nms": str(self.agnostic_nms)
+        }
 
 # --------------------
 # - Class which implements the process
 # - Inherits PyCore.CProtocolTask or derived from Ikomia API
 # --------------------
-class InferYoloV5(dataprocess.C2dImageTask):
+class InferYoloV5(dataprocess.CObjectDetectionTask):
 
     def __init__(self, name, param):
-        dataprocess.C2dImageTask.__init__(self, name)
+        dataprocess.CObjectDetectionTask.__init__(self, name)
         self.model = None
         self.names = None
-        self.colors = None
         self.update = False
         # Detect if we have a GPU available
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # Add object detection output
-        self.addOutput(dataprocess.CObjectDetectionIO())
 
         # Create parameters class
         if param is None:
-            self.setParam(InferYoloV5Param())
+            self.set_param_object(InferYoloV5Param())
         else:
-            self.setParam(copy.deepcopy(param))
+            self.set_param_object(copy.deepcopy(param))
 
-    def getProgressSteps(self):
+    def get_progress_steps(self):
         # Function returning the number of progress steps for this process
         # This is handled by the main progress bar of Ikomia application
         return 6
 
     def run(self):
         # Core function of your process
-        # Call beginTaskRun for initialization
-        self.beginTaskRun()
+        # Call begin_task_run for initialization
+        self.begin_task_run()
 
         # Forward input image
-        self.forwardInputImage(0, 0)
+        self.forward_input_image(0, 0)
 
         # Step progress bar:
-        self.emitStepProgress()
+        self.emit_step_progress()
 
         # Get input :
-        img_input = self.getInput(0)
-        src_image = img_input.getImage()
+        img_input = self.get_input(0)
+        src_image = img_input.get_image()
 
         # Make predictions
         with torch.no_grad():
             self.predict(src_image)
 
-        # Call endTaskRun to finalize process
-        self.endTaskRun()
+        # Call end_task_run to finalize process
+        self.end_task_run()
 
     def predict(self, src_image):
-        param = self.getParam()
+        param = self.get_param_object()
 
         # Initialize
         init_logging()
         half = self.device.type != 'cpu'  # half precision only supported on CUDA
-
         # Load model
-        if self.model is None or param.update:
+        if self.model is None or param.update:        
             self.model = attempt_load(param.model_path, map_location=self.device)  # load FP32 model
             stride = int(self.model.stride.max())  # model stride
             param.input_size = check_img_size(param.input_size, s=stride)  # check img_size
@@ -169,7 +164,6 @@ class InferYoloV5(dataprocess.C2dImageTask):
 
             # Get names and colors
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
-            self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in self.names]
             param.update = False
         else:
             stride = int(self.model.stride.max())  # model stride
@@ -178,7 +172,7 @@ class InferYoloV5(dataprocess.C2dImageTask):
         image = letterbox(src_image, param.input_size, stride)[0]
         image = image.transpose(2, 0, 1)
         image = np.ascontiguousarray(image)
-        self.emitStepProgress()
+        self.emit_step_progress()
 
         # Run inference
         image = torch.from_numpy(image).to(self.device)
@@ -187,19 +181,15 @@ class InferYoloV5(dataprocess.C2dImageTask):
         if image.ndimension() == 3:
             image = image.unsqueeze(0)
 
-        self.emitStepProgress()
+        self.emit_step_progress()
 
         # Inference
         pred = self.model(image, augment=param.augment)[0]
-        self.emitStepProgress()
+        self.emit_step_progress()
 
         # Apply NMS
         pred = non_max_suppression(pred, param.conf_thres, param.iou_thres, agnostic=param.agnostic_nms)
-        self.emitStepProgress()
-
-        # Init object detection output
-        obj_detect_out = self.getOutput(1)
-        obj_detect_out.init("YoloV5", 0)
+        self.emit_step_progress()
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
@@ -208,17 +198,16 @@ class InferYoloV5(dataprocess.C2dImageTask):
                 det[:, :4] = scale_coords(image.shape[2:], det[:, :4], src_image.shape).round()
 
                 # Results
+                self.set_names(self.names)
                 index = 0
                 for *xyxy, conf, cls in reversed(det):
                     # Box
                     w = float(xyxy[2] - xyxy[0])
                     h = float(xyxy[3] - xyxy[1])
-                    label = self.names[int(cls)]
-                    color = self.colors[int(cls)]
-                    obj_detect_out.addObject(index, label, conf.item(), float(xyxy[0]), float(xyxy[1]), w, h, color)
+                    self.add_object(index, int(cls), conf.item(), float(xyxy[0]), float(xyxy[1]), w, h)
                     index += 1
 
-        self.emitStepProgress()
+        self.emit_step_progress()
 
 
 # --------------------
@@ -231,15 +220,15 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         dataprocess.CTaskFactory.__init__(self)
         # Set process information as string here
         self.info.name = "infer_yolo_v5"
-        self.info.shortDescription = "Ultralytics YoloV5 object detection models."
+        self.info.short_description = "Ultralytics YoloV5 object detection models."
         self.info.description = "This plugin proposes inference on YoloV5 object detection models. " \
                                 "Models implementation comes from the Ultralytics team based on " \
                                 "PyTorch framework."
         self.info.authors = "Plugin authors"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.2.1"
-        self.info.iconPath = "icons/icon.png"
+        self.info.version = "1.3.0"
+        self.info.icon_path = "icons/icon.png"
         self.info.authors = "Ultralytics"
         self.info.year = 2020
         self.info.license = "GPLv3"

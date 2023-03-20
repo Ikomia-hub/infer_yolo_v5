@@ -76,7 +76,7 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
         layout_ptr = qtconversion.PyQtToQt(self.grid_layout)
 
         # Set widget layout
-        self.setLayout(layout_ptr)
+        self.set_layout(layout_ptr)
 
     def on_combo_dataset_changed(self, index):
         if self.combo_dataset.itemText(index) == "COCO":
@@ -87,7 +87,7 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
             self.label_model_path.setVisible(True)
             self.browse_model.setVisible(True)
 
-    def onApply(self):
+    def on_apply(self):
         # Apply button clicked slot
         # Get parameters from widget
         self.parameters.update = True
@@ -105,7 +105,7 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
         self.parameters.iou_thres = self.spin_iou.value()
 
         # Send signal to launch the process
-        self.emitApply(self.parameters)
+        self.emit_apply(self.parameters)
 
 
 # --------------------
