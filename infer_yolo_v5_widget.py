@@ -56,7 +56,8 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
         self.combo_dataset.currentIndexChanged.connect(self.on_combo_dataset_changed)
 
         self.label_model_path = QLabel("Model path")
-        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_path, tooltip="Select file",
+        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_path,
+                                                       tooltip="Select file",
                                                        mode=QFileDialog.ExistingFile)
         row = self.grid_layout.rowCount()
         self.grid_layout.addWidget(self.label_model_path, row, 0)
@@ -64,13 +65,21 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
         self.label_model_path.setVisible(False if self.parameters.dataset == "COCO" else True)
         self.browse_model.setVisible(False if self.parameters.dataset == "COCO" else True)
 
-        self.spin_size = pyqtutils.append_spin(self.grid_layout, "Input size", self.parameters.input_size)
+        self.spin_size = pyqtutils.append_spin(self.grid_layout,
+                                               "Input size",
+                                               self.parameters.input_size)
 
-        self.spin_confidence = pyqtutils.append_double_spin(self.grid_layout, "Confidence", self.parameters.conf_thres,
-                                                            step=0.05, decimals=2)
+        self.spin_confidence = pyqtutils.append_double_spin(self.grid_layout,
+                                                            "Confidence",
+                                                            self.parameters.conf_thres,
+                                                            step=0.05,
+                                                            decimals=2)
 
-        self.spin_iou = pyqtutils.append_double_spin(self.grid_layout, "IOU threshold", self.parameters.iou_thres,
-                                                     step=0.05, decimals=2)
+        self.spin_iou = pyqtutils.append_double_spin(self.grid_layout,
+                                                     "IOU threshold",
+                                                     self.parameters.iou_thres,
+                                                     step=0.05,
+                                                     decimals=2)
 
         # PyQt -> Qt wrapping
         layout_ptr = qtconversion.PyQtToQt(self.grid_layout)

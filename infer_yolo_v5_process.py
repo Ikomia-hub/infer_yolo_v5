@@ -22,7 +22,6 @@ import copy
 import sys
 import logging
 import torch
-import random
 import numpy as np
 from yolov5.models.experimental import attempt_load
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
@@ -155,14 +154,14 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
         init_logging()
         half = self.device.type != 'cpu'  # half precision only supported on CUDA
         # Load model
-        if self.model is None or param.update:        
+        if self.model is None or param.update:
             self.model = attempt_load(param.model_path, map_location=self.device)  # load FP32 model
             stride = int(self.model.stride.max())  # model stride
             param.input_size = check_img_size(param.input_size, s=stride)  # check img_size
             if half:
                 self.model.half()  # to FP16F
 
-            # Get names and colors
+            # Get names
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
             param.update = False
         else:
@@ -188,7 +187,11 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
         self.emit_step_progress()
 
         # Apply NMS
-        pred = non_max_suppression(pred, param.conf_thres, param.iou_thres, agnostic=param.agnostic_nms)
+        pred = non_max_suppression(
+                            pred, param.conf_thres,
+                            param.iou_thres,
+                            agnostic=param.agnostic_nms
+                                )
         self.emit_step_progress()
 
         # Process detections
@@ -204,7 +207,14 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
                     # Box
                     w = float(xyxy[2] - xyxy[0])
                     h = float(xyxy[3] - xyxy[1])
-                    self.add_object(index, int(cls), conf.item(), float(xyxy[0]), float(xyxy[1]), w, h)
+                    self.add_object(index,
+                                    int(cls),
+                                    conf.item(),
+                                    float(xyxy[0]),
+                                    float(xyxy[1]),
+                                    w,
+                                    h)
+
                     index += 1
 
         self.emit_step_progress()
@@ -235,7 +245,7 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         # Code source repository
         self.info.repository = "https://github.com/ultralytics/yolov5"
         # Keywords used for search
-        self.info.keywords = "object,detection,pytorch"
+        self.info.keywords = "object, detection, pytorch"
 
     def create(self, param=None):
         # Create process object
