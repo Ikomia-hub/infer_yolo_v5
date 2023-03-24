@@ -99,6 +99,7 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
             "iou_thres": str(self.iou_thres),
             "agnostic_nms": str(self.agnostic_nms)
         }
+        return params
 
 # --------------------
 # - Class which implements the process
