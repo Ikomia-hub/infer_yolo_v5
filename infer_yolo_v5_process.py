@@ -131,9 +131,6 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
         # Call begin_task_run for initialization
         self.begin_task_run()
 
-        # Forward input image
-        self.forward_input_image(0, 0)
-
         # Step progress bar:
         self.emit_step_progress()
 
