@@ -161,6 +161,7 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
 
             # Get names
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
+            self.set_names(self.names)
             param.update = False
         else:
             stride = int(self.model.stride.max())  # model stride
@@ -197,9 +198,7 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
             if len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(image.shape[2:], det[:, :4], src_image.shape).round()
-
                 # Results
-                self.set_names(self.names)
                 index = 0
                 for *xyxy, conf, cls in reversed(det):
                     # Box
