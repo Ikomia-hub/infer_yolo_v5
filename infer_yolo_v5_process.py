@@ -58,13 +58,10 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
 
-        # Create models folder
-        models_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
-        os.makedirs(models_folder, exist_ok=True)
-
         # Place default value initialization here
+        self.model_name_or_path = ""
         self.model_name = "yolov5s"
-        self.model_path = models_folder + os.sep + self.model_name + ".pt"
+        self.model_path = ""
         self.dataset = "COCO"
         self.input_size = 640
         self.augment = False
@@ -75,7 +72,9 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
     def set_values(self, params):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
+        self.model_name_or_path = params["model_name_or_path"]
         self.model_name = params["model_name"]
+        self.model_path = params["model_path"]
         self.dataset = params["dataset"]
         self.input_size = int(params["input_size"])
         self.augment = utils.strtobool(params["augment"])
@@ -83,13 +82,11 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
         self.iou_thres = float(params["iou_thres"])
         self.agnostic_nms = utils.strtobool(params["agnostic_nms"])
 
-        if self.dataset != "COCO":
-            self.model_path = params["model_path"]
-
     def get_values(self):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
         params = {
+            "model_name_or_path": self.model_name_or_path,
             "model_name": self.model_name,
             "model_path": self.model_path,
             "dataset": self.dataset,
@@ -152,8 +149,19 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
         init_logging()
         half = self.device.type != 'cpu'  # half precision only supported on CUDA
         # Load model
+        # Create models folder
+        models_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
+        os.makedirs(models_folder, exist_ok=True)
+
         if self.model is None or param.update:
-            self.model = attempt_load(param.model_path, map_location=self.device)  # load FP32 model
+            if param.dataset != "COCO":
+                param.model_name_or_path = param.model_path
+            if os.path.isfile(param.model_path):
+                param.model_name_or_path = param.model_path
+            if not os.path.isfile(param.model_name_or_path):
+                param.model_name_or_path = models_folder + os.sep + param.model_name + ".pt"
+
+            self.model = attempt_load(param.model_name_or_path, map_location=self.device)  # load FP32 model
             stride = int(self.model.stride.max())  # model stride
             param.input_size = check_img_size(param.input_size, s=stride)  # check img_size
             if half:
