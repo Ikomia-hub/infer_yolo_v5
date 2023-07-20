@@ -59,9 +59,8 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
         core.CWorkflowTaskParam.__init__(self)
 
         # Place default value initialization here
-        self.model_name_or_path = ""
         self.model_name = "yolov5s"
-        self.model_path = ""
+        self.model_weight_file = ""
         self.dataset = "COCO"
         self.input_size = 640
         self.augment = False
@@ -72,9 +71,8 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
     def set_values(self, params):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
-        self.model_name_or_path = params["model_name_or_path"]
         self.model_name = params["model_name"]
-        self.model_path = params["model_path"]
+        self.model_weight_file = params["model_weight_file"]
         self.dataset = params["dataset"]
         self.input_size = int(params["input_size"])
         self.augment = utils.strtobool(params["augment"])
@@ -86,9 +84,8 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
         params = {
-            "model_name_or_path": self.model_name_or_path,
             "model_name": self.model_name,
-            "model_path": self.model_path,
+            "model_weight_file": self.model_weight_file,
             "dataset": self.dataset,
             "input_size": str(self.input_size),
             "augment": str(self.augment),
@@ -97,6 +94,7 @@ class InferYoloV5Param(core.CWorkflowTaskParam):
             "agnostic_nms": str(self.agnostic_nms)
         }
         return params
+
 
 # --------------------
 # - Class which implements the process
@@ -151,24 +149,22 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
         # Initialize
         init_logging()
         half = self.device.type != 'cpu'  # half precision only supported on CUDA
-        # Load model
         # Create models folder
         models_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
         os.makedirs(models_folder, exist_ok=True)
 
         if self.model is None or param.update:
-            if param.dataset != "COCO":
-                param.model_name_or_path = param.model_path
-            if os.path.isfile(param.model_path):
-                param.model_name_or_path = param.model_path
-            if not os.path.isfile(param.model_name_or_path):
-                param.model_name_or_path = models_folder + os.sep + param.model_name + ".pt"
+            # Load model
+            if not os.path.isfile(param.model_weight_file):
+                param.model_weight_file = models_folder + os.sep + param.model_name + ".pt"
 
-            self.model = attempt_load(param.model_name_or_path, map_location=self.device)  # load FP32 model
+            self.model = attempt_load(param.model_weight_file, map_location=self.device)  # load FP32 model
             stride = int(self.model.stride.max())  # model stride
             param.input_size = check_img_size(param.input_size, s=stride)  # check img_size
+
             if half:
-                self.model.half()  # to FP16F
+                # to FP16F
+                self.model.half()
 
             # Get names
             self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
@@ -201,7 +197,7 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
                             pred, param.conf_thres,
                             param.iou_thres,
                             agnostic=param.agnostic_nms
-                                )
+        )
         self.emit_step_progress()
 
         # Process detections
@@ -222,7 +218,6 @@ class InferYoloV5(dataprocess.CObjectDetectionTask):
                                     float(xyxy[1]),
                                     w,
                                     h)
-
                     index += 1
 
         self.emit_step_progress()
@@ -245,7 +240,7 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         self.info.authors = "Plugin authors"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.3.0"
+        self.info.version = "1.3.1"
         self.info.icon_path = "icons/icon.png"
         self.info.authors = "Ultralytics"
         self.info.year = 2020

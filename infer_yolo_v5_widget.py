@@ -55,14 +55,14 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
         self.combo_dataset.setCurrentIndex(0 if self.parameters.dataset == "COCO" else 1)
         self.combo_dataset.currentIndexChanged.connect(self.on_combo_dataset_changed)
 
-        self.label_model_path = QLabel("Model path")
-        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_path,
+        self.label_model_weight = QLabel("Model weight file")
+        self.browse_model = pyqtutils.BrowseFileWidget(path=self.parameters.model_weight_file,
                                                        tooltip="Select file",
                                                        mode=QFileDialog.ExistingFile)
         row = self.grid_layout.rowCount()
-        self.grid_layout.addWidget(self.label_model_path, row, 0)
+        self.grid_layout.addWidget(self.label_model_weight, row, 0)
         self.grid_layout.addWidget(self.browse_model, row, 1)
-        self.label_model_path.setVisible(False if self.parameters.dataset == "COCO" else True)
+        self.label_model_weight.setVisible(False if self.parameters.dataset == "COCO" else True)
         self.browse_model.setVisible(False if self.parameters.dataset == "COCO" else True)
 
         self.spin_size = pyqtutils.append_spin(self.grid_layout,
@@ -89,11 +89,11 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
 
     def on_combo_dataset_changed(self, index):
         if self.combo_dataset.itemText(index) == "COCO":
-            self.label_model_path.setVisible(False)
+            self.label_model_weight.setVisible(False)
             self.browse_model.setVisible(False)
             self.browse_model.set_path(self.combo_model.currentText() + ".pt")
         else:
-            self.label_model_path.setVisible(True)
+            self.label_model_weight.setVisible(True)
             self.browse_model.setVisible(True)
 
     def on_apply(self):
@@ -105,9 +105,9 @@ class InferYoloV5Widget(core.CWorkflowTaskWidget):
 
         if self.combo_dataset.currentText() == "COCO":
             models_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "models")
-            self.parameters.model_path = models_folder + os.sep + self.parameters.model_name + ".pt"
+            self.parameters.model_weight_file = models_folder + os.sep + self.parameters.model_name + ".pt"
         else:
-            self.parameters.model_path = self.browse_model.path
+            self.parameters.model_weight_file = self.browse_model.path
 
         self.parameters.input_size = self.spin_size.value()
         self.parameters.conf_thres = self.spin_confidence.value()
