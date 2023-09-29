@@ -21,7 +21,7 @@
 
 Run YoloV5 object detection models. Models implementation comes from the Ultralytics team based on PyTorch framework.
 
-![YOLOv5 detection](https://raw.githubusercontent.com/Ikomia-hub/infer_yolo_v5/feat/new_readme/icons/output.jpg)
+![YOLOv5 detection](https://raw.githubusercontent.com/Ikomia-hub/infer_yolo_v5/main/icons/output.jpg)
 
 
 ## :rocket: Use with Ikomia API
