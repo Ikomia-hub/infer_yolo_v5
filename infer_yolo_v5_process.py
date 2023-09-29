@@ -246,6 +246,8 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         self.info.repository = "https://github.com/ultralytics/yolov5"
         # Keywords used for search
         self.info.keywords = "object, detection, pytorch"
+        self.info.algo_type = core.AlgoType.INFER
+        self.info.algo_tasks = "OBJECT_DETECTION"
 
     def create(self, param=None):
         # Create process object
