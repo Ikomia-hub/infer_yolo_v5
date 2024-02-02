@@ -237,7 +237,7 @@ class InferYoloV5Factory(dataprocess.CTaskFactory):
         self.info.authors = "Plugin authors"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.3.1"
+        self.info.version = "1.3.2"
         self.info.icon_path = "icons/icon.png"
         self.info.authors = "Ultralytics"
         self.info.year = 2020
